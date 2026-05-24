@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Teddy Buddies — Daily Social Pulse</title>
+<style>
+  :root{
+    --bg:#08080A;
+    --card:rgba(255,255,255,0.025);
+    --card-2:rgba(255,255,255,0.04);
+    --border:rgba(255,255,255,0.07);
+    --border-2:rgba(255,255,255,0.11);
+    --kelly:#F59E0B;     /* primary / amber / PAID */
+    --user:#8B5CF6;      /* purple / secondary */
+    --win:#10B981;       /* up / good / ORGANIC */
+    --loss:#EF4444;      /* down / lost / cut */
+    --info:#38BDF8;      /* views / reach */
+    --neutral:#6B7280;
+    --t1:#FFFFFF;
+    --t2:rgba(255,255,255,0.64);
+    --t3:rgba(255,255,255,0.40);
+    --mono:"SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{
+    background:var(--bg);color:var(--t1);font-family:var(--sans);
+    line-height:1.6;font-size:15px;-webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;overflow-x:hidden;
+  }
+  .ambient{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+  .ambient i{position:absolute;display:block;border-radius:50%;filter:blur(95px)}
+  .ambient i:nth-child(1){top:-30%;left:0%;width:70%;height:56%;
+    background:radial-gradient(ellipse,rgba(245,158,11,0.055),transparent 60%)}
+  .ambient i:nth-child(2){bottom:-30%;right:2%;width:62%;height:56%;
+    background:radial-gradient(ellipse,rgba(139,92,246,0.05),transparent 60%)}
+  .grid{position:fixed;inset:0;pointer-events:none;z-index:0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.018) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(255,255,255,0.018) 1px,transparent 1px);
+    background-size:60px 60px;
+    -webkit-mask-image:radial-gradient(ellipse 80% 70% at 50% 20%,#000 0%,transparent 80%);
+    mask-image:radial-gradient(ellipse 80% 70% at 50% 20%,#000 0%,transparent 80%);}
+
+  /* nav */
+  nav{position:sticky;top:0;z-index:50;backdrop-filter:blur(20px) saturate(160%);
+    -webkit-backdrop-filter:blur(20px) saturate(160%);background:rgba(8,8,10,0.72);
+    border-bottom:1px solid var(--border)}
+  .nav-in{max-width:1080px;margin:0 auto;padding:12px 24px;display:flex;align-items:center;
+    justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .brand{font-size:13px;font-weight:600;white-space:nowrap}
+  .brand b{color:var(--kelly)} .brand span{color:var(--t3);font-weight:400} .brand i{color:var(--user);font-style:normal}
+  .nav-tabs{display:flex;gap:6px}
+  .nav-tabs a{color:var(--t3);text-decoration:none;font-size:11px;text-transform:uppercase;
+    letter-spacing:1px;padding:6px 12px;border-radius:8px;transition:.18s;font-weight:600}
+  .nav-tabs a:hover{color:var(--t1);background:rgba(255,255,255,0.05)}
+
+  main{position:relative;z-index:1;max-width:1080px;margin:0 auto;padding:0 24px 90px}
+
+  /* report header */
+  header.rep{padding:34px 0 18px}
+  .rep-top{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+  .live{display:inline-flex;align-items:center;gap:7px;font-size:10.5px;font-weight:600;
+    letter-spacing:1px;text-transform:uppercase;color:var(--win);background:rgba(16,185,129,0.1);
+    border:1px solid rgba(16,185,129,0.28);padding:6px 11px;border-radius:999px}
+  .live i{width:7px;height:7px;border-radius:50%;background:var(--win);
+    box-shadow:0 0 8px rgba(16,185,129,0.9);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+  h1{font-size:clamp(25px,4vw,36px);font-weight:300;letter-spacing:-1px;margin-top:22px;line-height:1.12}
+  h1 b{font-weight:600;color:var(--t1)}
+  .date{margin-top:8px;color:var(--t3);font-size:13px}
+
+  /* band label */
+  .band{display:flex;align-items:center;gap:12px;margin:40px 0 4px}
+  .band .bt{font-size:11px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--kelly)}
+  .band .bl{flex:1;height:1px;background:var(--border)}
+  .band .bd{font-size:11px;color:var(--t3)}
+  .band.op .bt{color:var(--user)}
+
+  /* verdict */
+  .verdict{margin:16px 0 0;background:linear-gradient(180deg,rgba(245,158,11,0.06),rgba(245,158,11,0.012));
+    border:1px solid rgba(245,158,11,0.18);border-radius:18px;padding:20px 24px}
+  .verdict .vh{font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--kelly);
+    font-weight:700;margin-bottom:8px}
+  .verdict p{font-size:16px;color:var(--t1);line-height:1.55}
+  .up{color:var(--win)} .dn{color:var(--loss)} .hl{color:var(--kelly)} .iv{color:var(--info)} .pu{color:var(--user)}
+
+  /* KPI strip */
+  .kpis{display:grid;grid-template-columns:repeat(6,1fr);gap:11px;margin:16px 0 0}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:15px 14px;position:relative;overflow:hidden}
+  .kpi:before{content:"";position:absolute;inset:0 0 auto 0;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.16),transparent)}
+  .kpi .lab{font-size:9px;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-bottom:8px;line-height:1.3}
+  .kpi .val{font-size:22px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.5px;line-height:1}
+  .kpi .sub{font-size:10.5px;color:var(--t3);margin-top:6px;font-variant-numeric:tabular-nums}
+  .kpi.hero{background:linear-gradient(180deg,rgba(16,185,129,0.09),rgba(16,185,129,0.02));border-color:rgba(16,185,129,0.25)}
+  .kpi.k-fol .val{color:var(--win)} .kpi.k-view .val{color:var(--info)}
+  .kpi.k-enq .val{color:var(--user)} .kpi.k-cpe .val{color:var(--kelly)}
+  .kpi.k-cpa .val{color:var(--win)} .kpi.k-rev .val{color:var(--t1)}
+
+  /* sections / cards */
+  section{margin-top:22px}
+  .sh{display:flex;align-items:center;gap:11px;margin-bottom:13px}
+  .sh .ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:15px;flex-shrink:0}
+  .sh h2{font-size:17px;font-weight:600;letter-spacing:-.2px}
+  .sh .meta{margin-left:auto;font-size:11px;color:var(--t3);font-variant-numeric:tabular-nums;text-align:right}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:20px 22px}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:13px}
+  .cap{font-size:11px;color:var(--t3);margin-top:12px;line-height:1.5}
+  .cap b{color:var(--t2)}
+
+  svg{display:block;width:100%;height:auto;overflow:visible}
+  .leg{display:flex;gap:18px;flex-wrap:wrap;margin-top:14px;font-size:11.5px;color:var(--t3);align-items:center}
+  .leg span{display:flex;align-items:center;gap:7px}
+  .leg .dot{width:10px;height:10px;border-radius:3px;display:inline-block}
+
+  /* funnel */
+  .funnel-wrap{display:flex;gap:8px;flex-wrap:wrap}
+  .funnel-svg{flex:1;min-width:300px}
+  .fstage{display:flex;align-items:center;gap:10px}
+  .conv-pill{font-size:10px;font-weight:700;color:var(--t3);font-variant-numeric:tabular-nums}
+
+  /* gauges & bars */
+  .gauge-row{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+  .pace{flex:1;min-width:240px}
+  .pace .pbar{height:14px;border-radius:8px;background:rgba(255,255,255,0.06);overflow:hidden;position:relative;margin:10px 0}
+  .pace .pbar i{display:block;height:100%;border-radius:8px;background:linear-gradient(90deg,var(--kelly),var(--user))}
+  .pace .pbar .onpace{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--t1);opacity:.6}
+  .pflex{display:flex;justify-content:space-between;font-size:11px;color:var(--t3);font-variant-numeric:tabular-nums}
+
+  /* platform cards */
+  .pf .pn{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:600;margin-bottom:12px}
+  .pf .pn .badge{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:12px;color:#fff}
+  .pf .big{font-size:27px;font-weight:600;font-variant-numeric:tabular-nums;letter-spacing:-.5px}
+  .splits{display:flex;gap:14px;margin-top:14px;padding-top:12px;border-top:1px solid var(--border)}
+  .splits .s{flex:1}
+  .splits .sl{font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:4px}
+  .splits .sv{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}
+
+  /* banger + momentum */
+  .banger{display:flex;gap:16px;flex-wrap:wrap}
+  .thumb{width:104px;height:104px;border-radius:14px;flex-shrink:0;position:relative;display:grid;place-items:center;
+    background:linear-gradient(135deg,#F59E0B,#8B5CF6)}
+  .thumb .pt{font-size:10px;font-weight:700;color:rgba(255,255,255,0.9);text-transform:uppercase;letter-spacing:1px}
+  .thumb .crown{position:absolute;top:7px;left:7px;font-size:15px}
+  .binfo{flex:1;min-width:190px}
+  .bcap{font-size:14px;font-weight:500;margin-bottom:3px}
+  .bmeta{font-size:11px;color:var(--t3);margin-bottom:12px}
+  .bstats{display:flex;gap:18px;flex-wrap:wrap}
+  .bstats .bl{font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:3px}
+  .bstats .bv{font-size:16px;font-weight:600;font-variant-numeric:tabular-nums}
+  .mrow{display:flex;align-items:center;gap:13px;padding:12px 0;border-top:1px solid var(--border)}
+  .mrow:first-child{border-top:none}
+  .mrank{width:18px;font-size:12px;font-weight:700;color:var(--t3);text-align:center;flex-shrink:0}
+  .mthumb{width:38px;height:38px;border-radius:9px;flex-shrink:0;display:grid;place-items:center;font-size:14px}
+  .mbody{flex:1;min-width:0}
+  .mname{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .msub{font-size:10.5px;color:var(--t3);font-variant-numeric:tabular-nums;margin-top:2px}
+  .mbar{height:5px;border-radius:3px;background:rgba(255,255,255,0.06);margin-top:6px;overflow:hidden}
+  .mbar i{display:block;height:100%;border-radius:3px;background:linear-gradient(90deg,var(--kelly),var(--user))}
+  .mgrow{text-align:right;flex-shrink:0;min-width:58px}
+  .mgrow .pct{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--win)}
+  .mgrow .pl{font-size:9px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px}
+
+  /* heatmap */
+  .heat{display:grid;grid-template-columns:34px repeat(8,1fr);gap:4px}
+  .heat .hh{font-size:9px;color:var(--t3);text-align:center;align-self:center}
+  .heat .hd{font-size:10px;color:var(--t3);align-self:center}
+  .heat .hc{aspect-ratio:1.6;border-radius:5px;background:var(--info)}
+
+  /* content type bars */
+  .ctrow{display:flex;align-items:center;gap:12px;margin:11px 0}
+  .ctname{width:78px;font-size:12px;color:var(--t2);flex-shrink:0}
+  .ctbar{flex:1;height:24px;background:rgba(255,255,255,0.05);border-radius:7px;overflow:hidden;position:relative}
+  .ctbar i{display:block;height:100%;border-radius:7px}
+  .ctval{position:absolute;right:9px;top:50%;transform:translateY(-50%);font-size:11px;font-weight:600;
+    font-variant-numeric:tabular-nums;color:#fff}
+  .cter{width:54px;text-align:right;font-size:11px;color:var(--t3);font-variant-numeric:tabular-nums;flex-shrink:0}
+
+  /* ad table */
+  .tbl{width:100%;border-collapse:separate;border-spacing:0;font-size:12.5px}
+  .tbl th{font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--t3);text-align:right;
+    padding:8px 8px;font-weight:600;border-bottom:1px solid var(--border)}
+  .tbl th:first-child{text-align:left}
+  .tbl td{padding:11px 8px;text-align:right;color:var(--t2);border-bottom:1px solid var(--border);font-variant-numeric:tabular-nums}
+  .tbl td:first-child{text-align:left;color:var(--t1);font-weight:500}
+  .tbl tr:last-child td{border-bottom:none}
+  .pill{display:inline-block;font-size:9.5px;font-weight:700;padding:3px 8px;border-radius:999px;letter-spacing:.5px;text-transform:uppercase}
+  .pill.scale{background:rgba(16,185,129,0.15);color:var(--win)}
+  .pill.hold{background:rgba(245,158,11,0.15);color:var(--kelly)}
+  .pill.cut{background:rgba(239,68,68,0.15);color:var(--loss)}
+  .pill.fresh{background:rgba(56,189,248,0.15);color:var(--info)}
+
+  /* fatigue */
+  .fatscore{text-align:center;flex-shrink:0;width:120px}
+  .fatscore .fv{font-size:34px;font-weight:700;font-variant-numeric:tabular-nums;color:var(--loss)}
+  .fatscore .fl{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--t3);margin-top:2px}
+  .fatscore .ft{font-size:11px;color:var(--loss);font-weight:600;margin-top:8px}
+
+  /* reviews */
+  .newrev{background:linear-gradient(180deg,rgba(16,185,129,0.07),transparent);
+    border:1px solid rgba(16,185,129,0.22);border-radius:14px;padding:15px 17px;margin-bottom:13px}
+  .newrev .rt{display:flex;align-items:center;gap:9px;margin-bottom:8px;flex-wrap:wrap}
+  .newrev .flag{font-size:9px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--win);
+    background:rgba(16,185,129,0.14);padding:4px 9px;border-radius:999px}
+  .newrev .ago{font-size:10.5px;color:var(--t3);margin-left:auto}
+  .stars{color:var(--kelly);letter-spacing:2px;font-size:13px}
+  .stars .e{color:rgba(255,255,255,0.16)}
+  .rname{font-size:12.5px;font-weight:600;margin-top:2px}
+  .rtext{font-size:13px;color:var(--t2);margin-top:7px;font-style:italic;line-height:1.5}
+  .rloc{font-size:10.5px;color:var(--t3);margin-top:8px}
+  .revloc{background:var(--card-2);border:1px solid var(--border);border-radius:11px;padding:13px 15px}
+  .revloc .ln{font-size:12px;font-weight:600;margin-bottom:7px}
+  .revloc .rr{display:flex;align-items:baseline;gap:7px}
+  .revloc .rr .rv{font-size:20px;font-weight:600;font-variant-numeric:tabular-nums}
+  .revloc .rr .rc{font-size:10.5px;color:var(--t3)}
+  .revloc .unans{font-size:10.5px;margin-top:7px;font-weight:500;color:var(--loss)}
+  .revloc .unans.zero{color:var(--win)}
+  .theme{display:inline-block;font-size:10.5px;padding:4px 10px;border-radius:999px;margin:3px 4px 3px 0;
+    background:var(--card-2);border:1px solid var(--border);color:var(--t2)}
+  .theme.pos{border-color:rgba(16,185,129,0.3);color:var(--win)}
+  .theme.neg{border-color:rgba(239,68,68,0.3);color:var(--loss)}
+
+  /* AI insight + actions */
+  .insight{background:linear-gradient(110deg,rgba(139,92,246,0.12),rgba(245,158,11,0.06));
+    border:1px solid rgba(139,92,246,0.28);border-radius:16px;padding:20px 24px;display:flex;gap:16px;align-items:flex-start}
+  .insight .ii{font-size:26px;flex-shrink:0}
+  .insight .it{font-size:10.5px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:var(--user);margin-bottom:6px}
+  .insight p{font-size:15px;color:var(--t1);line-height:1.55}
+  .actions{background:linear-gradient(180deg,rgba(139,92,246,0.07),transparent);
+    border:1px solid rgba(139,92,246,0.2);border-radius:16px;padding:20px 22px}
+  .actions .ah2{display:flex;align-items:center;gap:9px;font-size:13px;font-weight:700;letter-spacing:1px;
+    text-transform:uppercase;color:var(--user);margin-bottom:13px}
+  .act{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-top:1px solid var(--border)}
+  .act:first-of-type{border-top:none}
+  .act .ck{width:19px;height:19px;border-radius:6px;border:1.5px solid var(--user);flex-shrink:0;margin-top:1px}
+  .act .atx{font-size:13.5px;color:var(--t1)}
+  .act .atx .why{display:block;font-size:11.5px;color:var(--t3);margin-top:3px}
+
+  .deliver{margin-top:24px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--t3);
+    background:var(--card);border:1px solid var(--border);border-radius:13px;padding:14px 18px}
+  .deliver b{color:var(--t2)}
+  .chip{display:inline-flex;align-items:center;gap:6px;background:var(--card-2);border:1px solid var(--border);
+    border-radius:999px;padding:5px 11px;font-size:11px;color:var(--t2)}
+  footer{border-top:1px solid var(--border);margin-top:34px;padding:22px 0 6px;text-align:center}
+  footer p{font-size:11px;color:var(--t3);margin:3px 0}
+  .proto{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;
+    color:var(--kelly);background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.25);
+    padding:5px 12px;border-radius:999px;margin-bottom:10px}
+
+  @media(max-width:760px){
+    main{padding:0 15px 70px}.nav-tabs{display:none}
+    .kpis{grid-template-columns:repeat(3,1fr)}
+    .grid2,.grid3{grid-template-columns:1fr}
+    h1{font-size:24px}.tbl{font-size:11px}.tbl th,.tbl td{padding:8px 5px}
+    .heat{grid-template-columns:30px repeat(8,1fr);gap:3px}
+  }
+
+  /* ---------- interactivity ---------- */
+  .kpi,.card{transition:transform .18s ease,border-color .18s ease,box-shadow .18s ease}
+  .kpi:hover{transform:translateY(-3px);border-color:var(--border-2);box-shadow:0 10px 28px rgba(0,0,0,0.35)}
+  .card:hover{border-color:var(--border-2)}
+  .mrow{transition:background .15s ease;border-radius:8px}
+  .mrow:hover{background:rgba(255,255,255,0.03)}
+  .revloc{transition:border-color .15s ease}
+  .revloc:hover{border-color:var(--border-2)}
+  .hc{transition:opacity .12s ease,outline .12s ease}
+  .ctbar i{transition:filter .15s ease,width .9s cubic-bezier(.2,.8,.2,1)}
+  .xtip{position:fixed;z-index:200;display:none;pointer-events:none;background:rgba(12,12,15,0.97);
+    border:1px solid var(--border-2);border-radius:10px;padding:9px 12px;font-size:12px;color:#fff;
+    box-shadow:0 12px 36px rgba(0,0,0,0.6);max-width:250px;
+    backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+  .xtip .xh{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--t3);margin-bottom:6px;white-space:nowrap}
+  .xtip .xsub{font-size:11px;color:var(--t2);margin-top:5px;white-space:normal}
+  .xtip .xr{display:flex;align-items:center;gap:7px;font-variant-numeric:tabular-nums;margin:3px 0;white-space:nowrap}
+  .xtip .xr i{width:8px;height:8px;border-radius:2px;display:inline-block;flex-shrink:0}
+  .xtip .xr b{margin-left:auto;font-weight:600;padding-left:16px}
+</style>
+</head>
+<body>
+<div class="ambient"><i></i><i></i></div>
+<div class="grid"></div>
+
+<nav>
+  <div class="nav-in">
+    <div class="brand"><b>Teddy&nbsp;Buddies</b> <span>·</span> Daily Social Pulse <span>·</span> <i>AIBC&nbsp;Foundry</i></div>
+    <div class="nav-tabs">
+      <a href="#board">Board view</a>
+      <a href="#detail">Detailed view</a>
+    </div>
+  </div>
+</nav>
+
+<main>
+  <header class="rep">
+    <div class="rep-top">
+      <div></div>
+      <span class="live"><i></i> Auto-generated · 7:00 AM IST</span>
+    </div>
+    <h1>Good morning. Here's <b>yesterday in numbers</b> — and what it means for spend.</h1>
+    <div class="date">Saturday, 23 May 2026 &nbsp;·&nbsp; Facebook · Instagram · Google Reviews &nbsp;·&nbsp; daily deltas vs. prior day · funnel &amp; cost figures rolling 30-day</div>
+  </header>
+
+  <!-- ============================ BOARD VIEW ============================ -->
+  <div class="band" id="board"><span class="bt">Board view</span><span class="bl"></span><span class="bd">the 60-second strategic read</span></div>
+
+  <div class="verdict">
+    <div class="vh">The 10-second version</div>
+    <p>Strong, efficient day. <b class="iv">9,840 views</b> (<b class="up">+18%</b>), <b class="up">+47 net followers</b>, and the "Annual Day" reel is compounding (<b class="up">+312%</b> in 24h). On the money that matters: 30-day <b class="hl">cost-per-enquiry is ₹218</b> and <b class="up">cost-per-admission ₹2,957</b> — we're acquiring a student for roughly <b class="up">2–4%</b> of first-year fees. <b class="up">One new 5★ review</b> overnight (unreplied). One warning: the carousel ad is <b class="dn">fatiguing</b> — refresh before it bleeds budget.</p>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi k-fol"><div class="lab">Net followers (day)</div><div class="val">+47</div><div class="sub"><span class="up">+61</span> · <span class="dn">−14</span></div></div>
+    <div class="kpi k-view"><div class="lab">Views (day)</div><div class="val">9,840</div><div class="sub"><span class="up">▲18%</span> vs prev</div></div>
+    <div class="kpi k-enq"><div class="lab">Enquiries (30d)</div><div class="val">312</div><div class="sub"><span class="up">▲9%</span> MoM</div></div>
+    <div class="kpi k-cpe"><div class="lab">Cost / enquiry</div><div class="val">₹218</div><div class="sub"><span class="up">▼₹38</span> best wk</div></div>
+    <div class="kpi hero k-cpa"><div class="lab">Cost / admission</div><div class="val">₹2,957</div><div class="sub">23 admits · 30d</div></div>
+    <div class="kpi k-rev"><div class="lab">New reviews</div><div class="val">1</div><div class="sub">5★ · 1 to reply</div></div>
+  </div>
+
+  <!-- HERO: ADMISSIONS FUNNEL -->
+  <section>
+    <div class="sh">
+      <div class="ic" style="background:rgba(16,185,129,0.14);color:var(--win)">🎯</div>
+      <h2>The Admissions Funnel — what the money actually bought</h2>
+      <div class="meta">rolling 30 days · ₹68,000 ad spend</div>
+    </div>
+    <div class="card">
+      <div class="funnel-wrap">
+        <svg id="funnel" class="funnel-svg" viewBox="0 0 420 270" aria-label="Admissions funnel">
+          <defs>
+            <linearGradient id="fg" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#38BDF8"/><stop offset="1" stop-color="#8B5CF6"/></linearGradient>
+            <linearGradient id="fg2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#8B5CF6"/><stop offset="1" stop-color="#F59E0B"/></linearGradient>
+            <linearGradient id="fg3" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F59E0B"/><stop offset="1" stop-color="#10B981"/></linearGradient>
+          </defs>
+          <!-- stage trapezoids, centered on x=210 -->
+          <polygon points="30,8 390,8 348,52 72,52"  fill="url(#fg)"  opacity="0.92"/>
+          <polygon points="74,58 346,58 312,102 108,102" fill="url(#fg)" opacity="0.74"/>
+          <polygon points="110,108 310,108 268,152 152,152" fill="url(#fg2)" opacity="0.82"/>
+          <polygon points="154,158 266,158 232,202 188,202" fill="url(#fg3)" opacity="0.85"/>
+          <polygon points="190,208 230,208 222,256 198,256" fill="#10B981" opacity="0.95"/>
+          <!-- stage labels -->
+          <text x="210" y="34" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">142,000 reached</text>
+          <text x="210" y="84" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">4,260 profile / link clicks</text>
+          <text x="210" y="134" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">312 enquiries</text>
+          <text x="210" y="184" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">86 campus visits</text>
+          <text x="210" y="236" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">23 admits</text>
+        </svg>
+        <div style="flex:1;min-width:230px;align-self:center">
+          <table class="tbl" style="font-size:12px">
+            <thead><tr><th>Stage → next</th><th>Conv.</th><th>Cost each</th></tr></thead>
+            <tbody>
+              <tr><td>Reach → click</td><td>3.0%</td><td>—</td></tr>
+              <tr><td>Click → enquiry</td><td>7.3%</td><td class="" style="color:var(--kelly)">₹218</td></tr>
+              <tr><td>Enquiry → visit</td><td><b style="color:var(--win)">27.6%</b></td><td>₹791</td></tr>
+              <tr><td>Visit → admission</td><td><b style="color:var(--win)">26.7%</b></td><td style="color:var(--win)">₹2,957</td></tr>
+            </tbody>
+          </table>
+          <p class="cap"><b>Visit-to-admission rate (26.7%) is the truest ROI signal</b> — once a parent walks in, 1 in 4 enrol. The lever isn't more ads; it's getting more enquiries to <i>visit</i>.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SPEND ROI -->
+  <section>
+    <div class="sh">
+      <div class="ic" style="background:rgba(245,158,11,0.14);color:var(--kelly)">💸</div>
+      <h2>Spend health &amp; trajectory</h2>
+      <div class="meta">May budget ₹75,000</div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="pace">
+          <div style="display:flex;justify-content:space-between;align-items:baseline">
+            <span style="font-size:12px;color:var(--t3);text-transform:uppercase;letter-spacing:1px">Budget pacing · day 23 / 31</span>
+            <span style="font-size:18px;font-weight:600;font-variant-numeric:tabular-nums">₹54,200 <span style="font-size:12px;color:var(--t3)">/ ₹75,000</span></span>
+          </div>
+          <div class="pbar"><i style="width:72%"></i><span class="onpace" style="left:74%"></span></div>
+          <div class="pflex"><span>72% spent</span><span style="color:var(--t1)">on pace ▲</span><span>projected ₹73,100</span></div>
+        </div>
+        <p class="cap">Tracking <b>just under</b> the on-pace marker (white line = 74%). Projected month-end ₹73,100 → ~₹1,900 headroom to push the winning ad.</p>
+      </div>
+      <div class="card">
+        <div style="font-size:12px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Cost per admission · last 6 months</div>
+        <svg id="cpaTrend" viewBox="0 0 320 110" aria-label="Cost per admission trend">
+          <polyline points="0,20 64,34 128,30 192,52 256,66 320,80" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          <circle cx="320" cy="80" r="4" fill="#10B981"/>
+          <text x="0" y="14" fill="rgba(255,255,255,0.5)" font-size="10">₹4,180</text>
+          <text x="290" y="98" fill="#10B981" font-size="11" font-weight="700">₹2,957</text>
+        </svg>
+        <div class="pflex" style="margin-top:6px"><span>Dec</span><span>Jan</span><span>Feb</span><span>Mar</span><span>Apr</span><span>May</span></div>
+        <p class="cap">Down <b style="color:var(--win)">29%</b> in six months as creative + targeting tightened. Every rupee is buying more students over time.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- AI INSIGHT -->
+  <section>
+    <div class="insight">
+      <div class="ii">🧠</div>
+      <div>
+        <div class="it">AI insight of the day</div>
+        <p>Reels featuring <b>children's faces in action</b> (play, performances) drive <b class="up">2.3× more enquiries within 48h</b> than facility or text-card posts. 4 of your last 5 "bangers" fit this pattern. <b>Recommendation:</b> shift the content + paid mix toward live classroom moments — it's your cheapest path to enquiries.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ DETAILED VIEW ============================ -->
+  <div class="band op" id="detail"><span class="bt">Detailed view</span><span class="bl"></span><span class="bd">for the marketing team — the working detail</span></div>
+
+  <!-- AUDIENCE -->
+  <section>
+    <div class="sh">
+      <div class="ic" style="background:rgba(56,189,248,0.14);color:var(--info)">👥</div>
+      <h2>Audience &amp; Followers</h2>
+      <div class="meta">snapshot 6:00 AM</div>
+    </div>
+    <div class="grid3">
+      <div class="card pf">
+        <div class="pn"><span class="badge" style="background:linear-gradient(135deg,#F58529,#DD2A7B)">📷</span> Instagram <span style="color:var(--t3);font-weight:400;font-size:11px">@teddybuddies</span></div>
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px">Followers</div>
+        <div class="big">4,863 <span style="font-size:13px;color:var(--win)">+38</span></div>
+        <div class="splits">
+          <div class="s"><div class="sl">Gained</div><div class="sv up">+49</div></div>
+          <div class="s"><div class="sl">Lost</div><div class="sv dn">−11</div></div>
+          <div class="s"><div class="sl">Reach</div><div class="sv">6,120</div></div>
+        </div>
+      </div>
+      <div class="card pf">
+        <div class="pn"><span class="badge" style="background:#1877F2">f</span> Facebook <span style="color:var(--t3);font-weight:400;font-size:11px">Teddy Buddies</span></div>
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px">Followers</div>
+        <div class="big">3,241 <span style="font-size:13px;color:var(--win)">+9</span></div>
+        <div class="splits">
+          <div class="s"><div class="sl">Gained</div><div class="sv up">+12</div></div>
+          <div class="s"><div class="sl">Lost</div><div class="sv dn">−3</div></div>
+          <div class="s"><div class="sl">Reach</div><div class="sv">3,720</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Follower trend · 30 days</div>
+        <svg id="folTrend" viewBox="0 0 300 96" aria-label="Follower trend">
+          <polyline points="0,78 50,72 100,66 150,54 200,46 250,32 300,20" fill="none" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"/>
+          <polyline points="0,86 50,84 100,83 150,80 200,79 250,77 300,75" fill="none" stroke="#1877F2" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+          <circle cx="300" cy="20" r="3.5" fill="#10B981"/><circle cx="300" cy="75" r="3.5" fill="#1877F2"/>
+        </svg>
+        <div class="leg" style="margin-top:8px">
+          <span><i class="dot" style="background:#10B981"></i>IG +263</span>
+          <span><i class="dot" style="background:#1877F2"></i>FB +61</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIEWS + ORGANIC/PAID -->
+  <section>
+    <div class="sh">
+      <div class="ic" style="background:rgba(56,189,248,0.14);color:var(--info)">📊</div>
+      <h2>Views, reach &amp; the organic / paid split</h2>
+      <div class="meta">last 14 days · 30-day split</div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Daily views · IG vs FB</div>
+        <svg id="viewsTrend" viewBox="0 0 340 130" aria-label="Views trend">
+          <line x1="0" y1="120" x2="340" y2="120" stroke="rgba(255,255,255,0.08)"/>
+          <polyline points="0,92 26,84 52,96 78,70 104,78 130,58 156,66 182,44 208,52 234,40 260,30 286,46 312,26 340,18" fill="none" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <polyline points="0,108 26,106 52,110 78,102 104,104 130,98 156,100 182,94 208,96 234,92 260,90 286,93 312,88 340,86" fill="none" stroke="#1877F2" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+          <circle cx="340" cy="18" r="3.5" fill="#38BDF8"/>
+        </svg>
+        <div class="leg"><span><i class="dot" style="background:#38BDF8"></i>Instagram</span><span><i class="dot" style="background:#1877F2"></i>Facebook</span><span style="margin-left:auto;color:var(--win)">▲ trending up</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Organic vs Paid · 30 days</div>
+        <svg id="orgPaid" viewBox="0 0 340 130" aria-label="Organic vs paid">
+          <!-- Reach bar -->
+          <text x="0" y="34" fill="rgba(255,255,255,0.5)" font-size="10">Reach</text>
+          <rect x="58" y="22" width="170" height="22" rx="4" fill="#10B981" opacity="0.85"/>
+          <rect x="228" y="22" width="104" height="22" rx="4" fill="#F59E0B" opacity="0.85"/>
+          <text x="143" y="38" text-anchor="middle" fill="#062b1f" font-size="11" font-weight="700">88K organic</text>
+          <text x="280" y="38" text-anchor="middle" fill="#3a2400" font-size="10" font-weight="700">54K paid</text>
+          <!-- Enquiries bar -->
+          <text x="0" y="92" fill="rgba(255,255,255,0.5)" font-size="10">Enquiries</text>
+          <rect x="58" y="80" width="106" height="22" rx="4" fill="#10B981" opacity="0.85"/>
+          <rect x="164" y="80" width="168" height="22" rx="4" fill="#F59E0B" opacity="0.85"/>
+          <text x="111" y="96" text-anchor="middle" fill="#062b1f" font-size="11" font-weight="700">121 organic</text>
+          <text x="248" y="96" text-anchor="middle" fill="#3a2400" font-size="11" font-weight="700">191 paid</text>
+        </svg>
+        <p class="cap">Paid drives <b>61% of enquiries</b> from only 38% of reach — ads are pulling weight. But organic enquiries cost ₹0: the "boost what's already winning" play matters.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- TOP CONTENT -->
+  <section>
+    <div class="sh">
+      <div class="ic" style="background:rgba(245,158,11,0.14);color:var(--kelly)">🔥</div>
+      <h2>Top content — banger &amp; risers</h2>
+      <div class="meta">composite score · daily velocity</div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="banger">
+          <div class="thumb"><span class="crown">👑</span><span class="pt">Reel</span></div>
+          <div class="binfo">
+            <div class="bcap">"Annual Day rehearsal — the little ones steal the show 🎭"</div>
+            <div class="bmeta">Instagram Reel · 2 days old · still climbing</div>
+            <div class="bstats">
+              <div><div class="bl">Views</div><div class="bv">4,210</div></div>
+              <div><div class="bl">Shares</div><div class="bv">94</div></div>
+              <div><div class="bl">Saves</div><div class="bv">61</div></div>
+              <div><div class="bl">Eng.</div><div class="bv up">13.2%</div></div>
+            </div>
+          </div>
+        </div>
+        <p class="cap"><b>Banger of the day.</b> High <b>save + share</b> rate (the 2026 intent signals) — prime candidate to put paid spend behind while it's hot.</p>
+      </div>
+      <div class="card">
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Rising — ranked by daily view velocity</div>
+        <div class="mrow"><div class="mrank">1</div><div class="mthumb" style="background:linear-gradient(135deg,#F59E0B,#8B5CF6)">🎭</div><div class="mbody"><div class="mname">Annual Day rehearsal reel</div><div class="msub">4,210 · was 1,021</div><div class="mbar"><i style="width:100%"></i></div></div><div class="mgrow"><div class="pct">+312%</div><div class="pl">/day</div></div></div>
+        <div class="mrow"><div class="mrank">2</div><div class="mthumb" style="background:linear-gradient(135deg,#38BDF8,#8B5CF6)">🎨</div><div class="mbody"><div class="mname">"Messy play Friday" carousel</div><div class="msub">1,930 · was 880</div><div class="mbar"><i style="width:62%"></i></div></div><div class="mgrow"><div class="pct">+119%</div><div class="pl">/day</div></div></div>
+        <div class="mrow"><div class="mrank">3</div><div class="mthumb" style="background:linear-gradient(135deg,#10B981,#38BDF8)">📚</div><div class="mbody"><div class="mname">"Why phonics first?" founder talk</div><div class="msub">760 · was 540</div><div class="mbar"><i style="width:28%"></i></div></div><div class="mgrow"><div class="pct">+41%</div><div class="pl">/day</div></div></div>
+        <div class="mrow"><div class="mrank">4</div><div class="mthumb" style="background:linear-gradient(135deg,#6B7280,#374151)">🏫</div><div class="mbody"><div class="mname">Campus walkthrough (FB)</div><div class="msub">410 · was 470 · cooling</div><div class="mbar"><i style="width:8%;background:var(--neutral)"></i></div></div><div class="mgrow"><div class="pct" style="color:var(--loss)">−13%</div><div class="pl">/day</div></div></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTENT TYPE + HEATMAP -->
+  <section>
+    <div class="sh">
+      <div class="ic" style="background:rgba(139,92,246,0.14);color:var(--user)">🗓️</div>
+      <h2>What works &amp; when to post</h2>
+      <div class="meta">30-day averages</div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Avg views by content type <span style="color:var(--t3)">· (eng. rate)</span></div>
+        <div class="ctrow"><div class="ctname">Reels</div><div class="ctbar"><i style="width:100%;background:linear-gradient(90deg,#F59E0B,#8B5CF6)"></i><span class="ctval">3,120</span></div><div class="cter">11.4%</div></div>
+        <div class="ctrow"><div class="ctname">Carousels</div><div class="ctbar"><i style="width:53%;background:linear-gradient(90deg,#38BDF8,#8B5CF6)"></i><span class="ctval">1,640</span></div><div class="cter">8.1%</div></div>
+        <div class="ctrow"><div class="ctname">Static</div><div class="ctbar"><i style="width:23%;background:#38BDF8"></i><span class="ctval">720</span></div><div class="cter">3.2%</div></div>
+        <div class="ctrow"><div class="ctname">Stories</div><div class="ctbar"><i style="width:13%;background:#6B7280"></i><span class="ctval">410</span></div><div class="cter">2.0%</div></div>
+        <p class="cap">Reels win on reach <b>and</b> engagement — they should be the paid + organic priority.</p>
+      </div>
+      <div class="card">
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">When your parents are online</div>
+        <div class="heat" id="heat">
+          <span></span><span class="hh">6a</span><span class="hh">9a</span><span class="hh">12p</span><span class="hh">3p</span><span class="hh">6p</span><span class="hh">9p</span><span class="hh">12a</span><span class="hh">3a</span>
+        </div>
+        <p class="cap">Two clear windows: <b>8–9 AM</b> (after drop-off) and <b>9–10 PM</b> (after bedtime). Schedule posts + ad delivery here.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- AD PERFORMANCE -->
+  <section>
+    <div class="sh">
+      <div class="ic" style="background:rgba(245,158,11,0.14);color:var(--kelly)">📐</div>
+      <h2>Ad performance — the decision tools</h2>
+      <div class="meta">Meta Ads · yesterday + trend</div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Spend-efficiency quadrant</div>
+        <svg id="quadrant" viewBox="0 0 340 200" aria-label="Spend efficiency quadrant">
+          <!-- axes -->
+          <line x1="40" y1="170" x2="330" y2="170" stroke="rgba(255,255,255,0.12)"/>
+          <line x1="40" y1="10" x2="40" y2="170" stroke="rgba(255,255,255,0.12)"/>
+          <!-- target CPE line -->
+          <line x1="40" y1="92" x2="330" y2="92" stroke="rgba(16,185,129,0.4)" stroke-dasharray="3 4"/>
+          <text x="330" y="88" text-anchor="end" fill="rgba(16,185,129,0.7)" font-size="9">target ₹220</text>
+          <text x="6" y="14" fill="rgba(255,255,255,0.4)" font-size="8">₹/enq</text>
+          <text x="6" y="168" fill="rgba(255,255,255,0.4)" font-size="8">low</text>
+          <text x="300" y="186" fill="rgba(255,255,255,0.4)" font-size="8">spend →</text>
+          <!-- bubbles: x=spend, y=cost-per-enq (lower=better=lower y means low cost? invert: high y = high cost) -->
+          <!-- Open day ₹540, CPE135 (good), 4 enq --><circle cx="92" cy="138" r="13" fill="#10B981" opacity="0.7"/><text x="92" y="142" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">Open</text>
+          <!-- Annual Day video ₹1480 CPE164, 9 enq big --><circle cx="222" cy="124" r="22" fill="#10B981" opacity="0.7"/><text x="222" y="128" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">Annual</text>
+          <!-- Testimonial ₹760 CPE190, 4 --><circle cx="128" cy="112" r="13" fill="#F59E0B" opacity="0.7"/><text x="128" y="116" text-anchor="middle" fill="#fff" font-size="7" font-weight="700">Testi</text>
+          <!-- Carousel ₹1020 CPE204, 5 --><circle cx="166" cy="102" r="15" fill="#F59E0B" opacity="0.7"/><text x="166" y="106" text-anchor="middle" fill="#fff" font-size="8" font-weight="700">Carou</text>
+          <!-- Campus tour ₹920 CPE460, 2 BAD high --><circle cx="152" cy="34" r="10" fill="#EF4444" opacity="0.75"/><text x="152" y="38" text-anchor="middle" fill="#fff" font-size="7" font-weight="700">Tour</text>
+        </svg>
+        <div class="leg"><span><i class="dot" style="background:#10B981"></i>Scale</span><span><i class="dot" style="background:#F59E0B"></i>Hold</span><span><i class="dot" style="background:#EF4444"></i>Cut</span><span style="margin-left:auto">bubble = enquiries</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px">Creative fatigue radar · "Carousel" ad</div>
+        <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <svg id="fatigue" viewBox="0 0 220 150" style="flex:1;min-width:150px" aria-label="Creative fatigue">
+            <line x1="0" y1="130" x2="220" y2="130" stroke="rgba(255,255,255,0.08)"/>
+            <!-- frequency rising (amber) -->
+            <polyline points="0,118 44,108 88,92 132,68 176,46 220,30" fill="none" stroke="#F59E0B" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- CTR falling (cyan) -->
+            <polyline points="0,40 44,46 88,60 132,82 176,104 220,120" fill="none" stroke="#38BDF8" stroke-width="2.5" stroke-linecap="round"/>
+            <!-- crossover marker -->
+            <circle cx="110" cy="76" r="4" fill="#EF4444"/>
+            <text x="110" y="64" text-anchor="middle" fill="#EF4444" font-size="9" font-weight="700">fatigue</text>
+          </svg>
+          <div class="fatscore">
+            <div class="fv">78</div>
+            <div class="fl">fatigue score</div>
+            <div class="ft">⚠ Refresh now</div>
+          </div>
+        </div>
+        <div class="leg"><span><i class="dot" style="background:#F59E0B"></i>Frequency ▲ 4.6</span><span><i class="dot" style="background:#38BDF8"></i>CTR ▼ 1.4%</span></div>
+        <p class="cap">Frequency past 4 + CTR falling = the textbook fatigue crossover. Same parents, same ad → Meta charges more. <b>Swap the creative.</b></p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:13px">
+      <table class="tbl">
+        <thead><tr><th>Ad / Campaign</th><th>Spend</th><th>CTR</th><th>Freq.</th><th>Enq.</th><th>Cost/enq.</th><th>Fatigue</th><th>Call</th></tr></thead>
+        <tbody>
+          <tr><td>Admissions — "Open Day" event</td><td>₹540</td><td>3.4%</td><td>1.6</td><td>4</td><td style="color:var(--win)">₹135</td><td><span class="pill fresh">Fresh</span></td><td><span class="pill scale">Scale</span></td></tr>
+          <tr><td>Admissions — "Annual Day" video</td><td>₹1,480</td><td>2.9%</td><td>2.1</td><td>9</td><td style="color:var(--win)">₹164</td><td><span class="pill fresh">Fresh</span></td><td><span class="pill scale">Scale</span></td></tr>
+          <tr><td>Admissions — testimonial reel</td><td>₹760</td><td>2.2%</td><td>2.8</td><td>4</td><td>₹190</td><td><span class="pill hold">OK</span></td><td><span class="pill hold">Hold</span></td></tr>
+          <tr><td>Admissions — carousel</td><td>₹1,020</td><td>1.4%</td><td>4.6</td><td>5</td><td>₹204</td><td><span class="pill cut">High 78</span></td><td><span class="pill hold">Refresh</span></td></tr>
+          <tr><td>Brand — campus tour</td><td>₹920</td><td>0.9%</td><td>3.2</td><td>2</td><td style="color:var(--loss)">₹460</td><td><span class="pill cut">High</span></td><td><span class="pill cut">Cut</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- TARGETING -->
+  <section>
+    <div class="sh">
+      <div class="ic" style="background:rgba(139,92,246,0.14);color:var(--user)">🎯</div>
+      <h2>Targeting accuracy — are we paying to reach the right people?</h2>
+      <div class="meta">paid impressions · 30 days</div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
+          <svg id="ageDonut" viewBox="0 0 120 120" width="120" height="120" aria-label="Age pie">
+            <!-- donut: 35-44 41%, 25-34 38%, 45+ 12%, 18-24 9% -->
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#8B5CF6" stroke-width="22" stroke-dasharray="118.4 170.6" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#38BDF8" stroke-width="22" stroke-dasharray="109.7 179.3" stroke-dashoffset="-118.4" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#6B7280" stroke-width="22" stroke-dasharray="34.6 254.4" stroke-dashoffset="-228.1" transform="rotate(-90 60 60)"/>
+            <circle cx="60" cy="60" r="46" fill="none" stroke="#374151" stroke-width="22" stroke-dasharray="26 263" stroke-dashoffset="-262.7" transform="rotate(-90 60 60)"/>
+            <text x="60" y="57" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">79%</text>
+            <text x="60" y="71" text-anchor="middle" fill="rgba(255,255,255,0.5)" font-size="8">parent age</text>
+          </svg>
+          <div style="flex:1;min-width:120px">
+            <div class="leg" style="margin:0;flex-direction:column;gap:8px;align-items:flex-start">
+              <span><i class="dot" style="background:#8B5CF6"></i>35–44 · 41%</span>
+              <span><i class="dot" style="background:#38BDF8"></i>25–34 · 38%</span>
+              <span><i class="dot" style="background:#6B7280"></i>45+ · 12%</span>
+              <span><i class="dot" style="background:#374151"></i>18–24 · 9%</span>
+            </div>
+          </div>
+        </div>
+        <p class="cap"><b>79% in prime parent age (25–44)</b> — healthy. The 21% outside is mostly wasted spend worth trimming from targeting.</p>
+      </div>
+      <div class="card">
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Reach by distance from branch</div>
+        <div class="ctrow"><div class="ctname">&lt; 5 km</div><div class="ctbar"><i style="width:100%;background:#10B981"></i><span class="ctval">61%</span></div></div>
+        <div class="ctrow"><div class="ctname">5–10 km</div><div class="ctbar"><i style="width:36%;background:#38BDF8"></i><span class="ctval">22%</span></div></div>
+        <div class="ctrow"><div class="ctname">&gt; 10 km</div><div class="ctbar"><i style="width:28%;background:#EF4444"></i><span class="ctval">17%</span></div></div>
+        <p class="cap"><b>17% reached beyond 10 km</b> — unlikely to enrol a preschooler that far. Tighten the radius and reclaim that budget for the catchment.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- GOOGLE REVIEWS -->
+  <section>
+    <div class="sh">
+      <div class="ic" style="background:rgba(16,185,129,0.14);color:var(--win)">⭐</div>
+      <h2>Google Reviews</h2>
+      <div class="meta">instant alert on every new review</div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="newrev">
+          <div class="rt"><span class="flag">● New overnight</span><span class="stars">★★★★★</span><span class="ago">2:14 AM · 4h ago</span></div>
+          <div class="rname">Priya Menon</div>
+          <div class="rtext">"Both my kids have flourished here. The teachers genuinely care and the activity-based learning is wonderful. Highly recommend to any parent nearby."</div>
+          <div class="rloc">📍 Vyttila branch · <b style="color:var(--loss)">Awaiting reply</b> — suggested reply drafted in WhatsApp</div>
+        </div>
+        <div class="grid2" style="gap:10px">
+          <div class="revloc"><div class="ln">📍 Vyttila</div><div class="rr"><span class="rv">4.7</span><span class="stars" style="font-size:11px">★★★★★</span><span class="rc">84 (+1)</span></div><div class="unans">1 awaiting reply</div></div>
+          <div class="revloc"><div class="ln">📍 Kakkanad</div><div class="rr"><span class="rv">4.5</span><span class="stars" style="font-size:11px">★★★★<span class="e">★</span></span><span class="rc">51</span></div><div class="unans zero">All replied ✓</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin-bottom:10px">Rating trajectory · 90 days</div>
+        <svg id="ratingTrend" viewBox="0 0 320 84" aria-label="Rating trend">
+          <polyline points="0,52 80,46 160,38 240,28 320,22" fill="none" stroke="#10B981" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="320" cy="22" r="4" fill="#10B981"/>
+          <text x="0" y="46" fill="rgba(255,255,255,0.5)" font-size="10">4.4</text>
+          <text x="296" y="18" fill="#10B981" font-size="11" font-weight="700">4.7</text>
+        </svg>
+        <div style="font-size:9.5px;color:var(--t3);text-transform:uppercase;letter-spacing:1px;margin:14px 0 8px">Star distribution &amp; sentiment</div>
+        <div class="ctrow" style="margin:5px 0"><div class="ctname" style="width:30px">5★</div><div class="ctbar" style="height:16px"><i style="width:84%;background:#10B981"></i></div><div class="cter">68</div></div>
+        <div class="ctrow" style="margin:5px 0"><div class="ctname" style="width:30px">4★</div><div class="ctbar" style="height:16px"><i style="width:14%;background:#38BDF8"></i></div><div class="cter">11</div></div>
+        <div class="ctrow" style="margin:5px 0"><div class="ctname" style="width:30px">≤3★</div><div class="ctbar" style="height:16px"><i style="width:6%;background:#EF4444"></i></div><div class="cter">5</div></div>
+        <div style="margin-top:12px">
+          <span class="theme pos">caring teachers ↑</span><span class="theme pos">activity-based ↑</span><span class="theme pos">communication ↑</span><span class="theme neg">pickup traffic ↓</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WHAT TO DO TODAY -->
+  <section>
+    <div class="actions">
+      <div class="ah2">⚡ What to do today</div>
+      <div class="act"><div class="ck"></div><div class="atx">Move the <b class="hl">campus-tour ad's ₹920</b> into <b class="up">"Open Day" + "Annual Day"</b> (₹135 &amp; ₹164/enq — 3× cheaper).<span class="why">Net effect: ~5 more enquiries/day for the same spend.</span></div></div>
+      <div class="act"><div class="ck"></div><div class="atx"><b class="dn">Refresh the carousel creative</b> — fatigue score 78, frequency 4.6, CTR halved.<span class="why">Reuse the Annual Day footage; it's your proven winner.</span></div></div>
+      <div class="act"><div class="ck"></div><div class="atx">Reply to <b class="up">Priya Menon's 5★ review</b> within the hour (draft waiting in WhatsApp).<span class="why">Fast replies lift Vyttila's local map ranking.</span></div></div>
+      <div class="act"><div class="ck"></div><div class="atx">Boost the <b class="hl">Annual Day reel</b> while it's hot (+312%, high saves) and tighten ad radius to <b>10 km</b>.<span class="why">Reclaims the 17% out-of-catchment spend.</span></div></div>
+    </div>
+  </section>
+
+  <div class="deliver">
+    <b>Delivered 7 AM daily to:</b>
+    <span class="chip">📱 WhatsApp — board + marketing</span>
+    <span class="chip">📊 3 PM standup feed</span>
+    <span class="chip">⭐ Instant ping on every new review</span>
+  </div>
+
+  <footer>
+    <div class="proto">Prototype · Illustrative sample data</div>
+    <p>Teddy Buddies — Daily Social Pulse · generated by the AIBC Foundry AI Department</p>
+    <p>Numbers are believable preschool-scale samples to demonstrate format &amp; capability, not live figures.</p>
+  </footer>
+</main>
+
+<script>
+  /* Progressive enhancement only — every chart is static SVG/HTML and renders without JS (iOS Quick Look safe).
+     This layer adds touch/drag/hover interactivity on top, using Pointer Events (mouse + touch unified). */
+  (function(){
+    "use strict";
+    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion:reduce)').matches;
+    var SVGNS='http://www.w3.org/2000/svg';
+    function mk(t,a){var e=document.createElementNS(SVGNS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+    function inr(v){return '₹'+Math.round(v).toLocaleString('en-IN');}
+    function num(v){return Math.round(v).toLocaleString('en-IN');}
+
+    /* ---- floating tooltip (follows finger / cursor) ---- */
+    var tip=document.createElement('div'); tip.className='xtip'; document.body.appendChild(tip);
+    function showTip(html,x,y){
+      tip.innerHTML=html; tip.style.display='block';
+      var w=tip.offsetWidth,h=tip.offsetHeight;
+      var left=x-w/2; if(left<8)left=8; if(left>window.innerWidth-w-8)left=window.innerWidth-w-8;
+      var top=y-h-18; if(top<8)top=y+24;
+      tip.style.left=left+'px'; tip.style.top=top+'px';
+    }
+    function hideTip(){ tip.style.display='none'; }
+    function row(c,n,v){return '<div class="xr"><i style="background:'+c+'"></i>'+n+'<b>'+v+'</b></div>';}
+
+    /* ---- interactive multi-series line: scrub / drag for crosshair + blip + values ---- */
+    function lineChart(id,cfg){
+      var svg=document.getElementById(id); if(!svg) return;
+      svg.style.touchAction='pan-y'; svg.style.cursor='crosshair';
+      var vbW=cfg.vb[0], vbH=cfg.vb[1];
+      var hot=mk('rect',{x:0,y:0,width:vbW,height:vbH,fill:'transparent','pointer-events':'all'});
+      svg.insertBefore(hot, svg.firstChild);
+      var cross=mk('line',{x1:0,y1:0,x2:0,y2:vbH,stroke:'rgba(255,255,255,0.32)','stroke-width':'1','stroke-dasharray':'3 3',opacity:'0','pointer-events':'none'});
+      svg.appendChild(cross);
+      var dots=cfg.series.map(function(s){
+        var halo=mk('circle',{r:'8',fill:s.color,opacity:'0','pointer-events':'none'});
+        var d=mk('circle',{r:'4',fill:'#fff',stroke:s.color,'stroke-width':'2',opacity:'0','pointer-events':'none'});
+        svg.appendChild(halo); svg.appendChild(d); return {halo:halo,d:d};
+      });
+      function at(cx,cy){
+        var r=svg.getBoundingClientRect();
+        var vx=(cx-r.left)/r.width*vbW, bi=0,bd=1e9, i;
+        for(i=0;i<cfg.x.length;i++){var dd=Math.abs(cfg.x[i]-vx);if(dd<bd){bd=dd;bi=i;}}
+        var X=cfg.x[bi];
+        cross.setAttribute('x1',X);cross.setAttribute('x2',X);cross.setAttribute('opacity','1');
+        var rows='';
+        cfg.series.forEach(function(s,si){
+          var Y=s.y[bi];
+          dots[si].halo.setAttribute('cx',X);dots[si].halo.setAttribute('cy',Y);dots[si].halo.setAttribute('opacity','0.22');
+          dots[si].d.setAttribute('cx',X);dots[si].d.setAttribute('cy',Y);dots[si].d.setAttribute('opacity','1');
+          rows+=row(s.color,s.name,s.fmt(s.vals[bi]));
+        });
+        showTip((cfg.labels?'<div class="xh">'+cfg.labels[bi]+'</div>':'')+rows, cx, cy);
+      }
+      function leave(){cross.setAttribute('opacity','0');dots.forEach(function(o){o.halo.setAttribute('opacity','0');o.d.setAttribute('opacity','0');});hideTip();}
+      svg.addEventListener('pointermove',function(e){at(e.clientX,e.clientY);});
+      svg.addEventListener('pointerdown',function(e){at(e.clientX,e.clientY);});
+      svg.addEventListener('pointerleave',leave);
+      svg.addEventListener('pointercancel',leave);
+      svg.addEventListener('pointerup',function(e){if(e.pointerType!=='mouse')leave();});
+    }
+
+    /* ---- generic element hover/tap (funnel stages, bubbles, donut slices, bars) ---- */
+    function hoverEls(list,build,hi,lo){
+      list.forEach(function(el,i){
+        el.style.cursor='pointer';
+        function on(e){ if(hi)hi(el); showTip(build(i),e.clientX,e.clientY); }
+        el.addEventListener('pointerenter',on);
+        el.addEventListener('pointermove',function(e){ showTip(build(i),e.clientX,e.clientY); });
+        el.addEventListener('pointerdown',on);
+        el.addEventListener('pointerleave',function(){ if(lo)lo(el); hideTip(); });
+        el.addEventListener('pointercancel',function(){ if(lo)lo(el); hideTip(); });
+        el.addEventListener('pointerup',function(e){ if(e.pointerType!=='mouse'){ if(lo)lo(el); hideTip(); } });
+      });
+    }
+
+    /* ===== line charts ===== */
+    lineChart('cpaTrend',{vb:[320,110],x:[0,64,128,192,256,320],labels:['Dec','Jan','Feb','Mar','Apr','May'],
+      series:[{name:'Cost / admission',color:'#10B981',y:[20,34,30,52,66,80],vals:[4180,3950,4010,3380,3120,2957],fmt:inr}]});
+    lineChart('folTrend',{vb:[300,96],x:[0,50,100,150,200,250,300],labels:['Apr 23','Apr 28','May 3','May 8','May 13','May 18','May 23'],
+      series:[{name:'Instagram',color:'#10B981',y:[78,72,66,54,46,32,20],vals:[4600,4640,4685,4740,4780,4825,4863],fmt:num},
+              {name:'Facebook',color:'#1877F2',y:[86,84,83,80,79,77,75],vals:[3180,3192,3205,3216,3225,3233,3241],fmt:num}]});
+    lineChart('viewsTrend',{vb:[340,130],x:[0,26,52,78,104,130,156,182,208,234,260,286,312,340],
+      labels:['May 10','May 11','May 12','May 13','May 14','May 15','May 16','May 17','May 18','May 19','May 20','May 21','May 22','May 23'],
+      series:[{name:'Instagram',color:'#38BDF8',y:[92,84,96,70,78,58,66,44,52,40,30,46,26,18],vals:[5200,5600,5100,6400,6000,7100,6700,8200,7600,8400,9100,7900,9400,9840],fmt:num},
+              {name:'Facebook',color:'#1877F2',y:[108,106,110,102,104,98,100,94,96,92,90,93,88,86],vals:[3100,3150,3000,3400,3300,3600,3500,3800,3700,3950,4050,3850,4150,4300],fmt:num}]});
+    lineChart('ratingTrend',{vb:[320,84],x:[0,80,160,240,320],labels:['Feb 22','Mar 16','Apr 8','Apr 30','May 23'],
+      series:[{name:'Avg rating',color:'#10B981',y:[52,46,38,28,22],vals:[4.40,4.45,4.55,4.65,4.70],fmt:function(v){return (Math.round(v*100)/100)+'★';}}]});
+    lineChart('fatigue',{vb:[220,150],x:[0,44,88,132,176,220],labels:['Day 1','Day 3','Day 6','Day 9','Day 12','Day 14'],
+      series:[{name:'Frequency',color:'#F59E0B',y:[118,108,92,68,46,30],vals:[1.2,1.8,2.4,3.3,4.0,4.6],fmt:function(v){return v.toFixed(1)+'×';}},
+              {name:'CTR',color:'#38BDF8',y:[40,46,60,82,104,120],vals:[3.1,2.8,2.3,1.9,1.6,1.4],fmt:function(v){return v.toFixed(1)+'%';}}]});
+
+    /* ===== funnel stages ===== */
+    var funnel=document.getElementById('funnel');
+    if(funnel){
+      funnel.style.touchAction='pan-y';
+      funnel.querySelectorAll('text').forEach(function(t){t.style.pointerEvents='none';});
+      var fd=[
+        {h:'Reach',v:'142,000 people',s:'Top of funnel — total accounts reached'},
+        {h:'Clicks',v:'4,260',s:'3.0% of reach · profile + link taps'},
+        {h:'Enquiries',v:'312',s:'7.3% of clicks · ₹218 cost each'},
+        {h:'Campus visits',v:'86',s:'27.6% of enquiries · ₹791 cost each'},
+        {h:'Admissions',v:'23',s:'26.7% of visits · ₹2,957 cost each'}
+      ];
+      hoverEls(Array.prototype.slice.call(funnel.querySelectorAll('polygon')),
+        function(i){return '<div class="xh">'+fd[i].h+'</div><div class="xr"><b style="margin:0;padding:0;font-size:14px">'+fd[i].v+'</b></div><div class="xsub">'+fd[i].s+'</div>';},
+        function(el){el.setAttribute('data-op',el.getAttribute('opacity'));el.setAttribute('opacity','1');},
+        function(el){el.setAttribute('opacity',el.getAttribute('data-op')||'0.9');});
+    }
+
+    /* ===== spend-efficiency bubbles ===== */
+    var quad=document.getElementById('quadrant');
+    if(quad){
+      quad.style.touchAction='pan-y';
+      quad.querySelectorAll('text').forEach(function(t){t.style.pointerEvents='none';});
+      var qd=[
+        {n:'Open Day event',c:'#10B981',s:'₹540 spend · 4 enquiries',cpe:'₹135',call:'Scale'},
+        {n:'Annual Day video',c:'#10B981',s:'₹1,480 spend · 9 enquiries',cpe:'₹164',call:'Scale'},
+        {n:'Testimonial reel',c:'#F59E0B',s:'₹760 spend · 4 enquiries',cpe:'₹190',call:'Hold'},
+        {n:'Carousel',c:'#F59E0B',s:'₹1,020 spend · 5 enquiries',cpe:'₹204',call:'Refresh'},
+        {n:'Campus tour',c:'#EF4444',s:'₹920 spend · 2 enquiries',cpe:'₹460',call:'Cut'}
+      ];
+      hoverEls(Array.prototype.slice.call(quad.querySelectorAll('circle')),
+        function(i){return '<div class="xh">'+qd[i].n+'</div><div class="xsub">'+qd[i].s+'</div>'+row(qd[i].c,'Cost / enquiry',qd[i].cpe)+row(qd[i].c,'Verdict',qd[i].call);},
+        function(el){el.setAttribute('data-r',el.getAttribute('r'));el.setAttribute('r',(+el.getAttribute('r')+4));el.setAttribute('opacity','0.95');},
+        function(el){el.setAttribute('r',el.getAttribute('data-r'));el.setAttribute('opacity','0.7');});
+    }
+
+    /* ===== age donut ===== */
+    var donut=document.getElementById('ageDonut');
+    if(donut){
+      donut.style.touchAction='pan-y';
+      donut.querySelectorAll('text').forEach(function(t){t.style.pointerEvents='none';});
+      var ad=[{n:'35–44',c:'#8B5CF6',v:'41%'},{n:'25–34',c:'#38BDF8',v:'38%'},{n:'45+',c:'#6B7280',v:'12%'},{n:'18–24',c:'#374151',v:'9%'}];
+      hoverEls(Array.prototype.slice.call(donut.querySelectorAll('circle')),
+        function(i){return '<div class="xh">Age '+ad[i].n+'</div>'+row(ad[i].c,'Share of paid reach',ad[i].v);},
+        function(el){el.setAttribute('data-w',el.getAttribute('stroke-width'));el.setAttribute('stroke-width','26');},
+        function(el){el.setAttribute('stroke-width',el.getAttribute('data-w'));});
+    }
+
+    /* ===== organic vs paid bars ===== */
+    var op=document.getElementById('orgPaid');
+    if(op){
+      op.style.touchAction='pan-y';
+      op.querySelectorAll('text').forEach(function(t){t.style.pointerEvents='none';});
+      var od=[{n:'Reach · Organic',c:'#10B981',v:'88,000 (62%)'},{n:'Reach · Paid',c:'#F59E0B',v:'54,000 (38%)'},
+              {n:'Enquiries · Organic',c:'#10B981',v:'121 (39%)'},{n:'Enquiries · Paid',c:'#F59E0B',v:'191 (61%)'}];
+      hoverEls(Array.prototype.slice.call(op.querySelectorAll('rect')),
+        function(i){return '<div class="xh">'+od[i].n+'</div><div class="xr"><b style="margin:0;padding:0">'+od[i].v+'</b></div>';},
+        function(el){el.setAttribute('data-o',el.getAttribute('opacity')||'0.85');el.setAttribute('opacity','1');},
+        function(el){el.setAttribute('opacity',el.getAttribute('data-o'));});
+    }
+
+    /* ===== horizontal HTML bars (content type, distance, star distribution) ===== */
+    Array.prototype.slice.call(document.querySelectorAll('.ctrow')).forEach(function(rw){
+      var name=rw.querySelector('.ctname'), val=rw.querySelector('.ctval'), er=rw.querySelector('.cter'), bar=rw.querySelector('.ctbar i');
+      if(!name) return;
+      rw.style.cursor='pointer'; rw.style.touchAction='pan-y';
+      function build(){
+        var parts=[];
+        if(val&&val.textContent.trim())parts.push(val.textContent.trim());
+        if(er&&er.textContent.trim())parts.push(er.textContent.trim());
+        return '<div class="xh">'+name.textContent.trim()+'</div>'+(parts.length?'<div class="xr"><b style="margin:0;padding:0">'+parts.join(' · ')+'</b></div>':'');
+      }
+      function on(e){ if(bar)bar.style.filter='brightness(1.22)'; showTip(build(),e.clientX,e.clientY); }
+      function off(){ if(bar)bar.style.filter=''; hideTip(); }
+      rw.addEventListener('pointerenter',on);
+      rw.addEventListener('pointermove',function(e){ showTip(build(),e.clientX,e.clientY); });
+      rw.addEventListener('pointerdown',on);
+      rw.addEventListener('pointerleave',off);
+      rw.addEventListener('pointercancel',off);
+      rw.addEventListener('pointerup',function(e){ if(e.pointerType!=='mouse')off(); });
+    });
+
+    /* ===== audience heatmap (build + tap-to-read) ===== */
+    var heat=document.getElementById('heat');
+    if(heat){
+      var days=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+      var blocks=['6 AM','9 AM','12 PM','3 PM','6 PM','9 PM','12 AM','3 AM'];
+      var lvl=['quiet','low','moderate','busy','PEAK'];
+      var grid=[
+        [1,4,2,1,2,4,1,0],[1,4,2,1,2,4,1,0],[1,4,3,1,2,4,1,0],[1,4,2,1,2,4,1,0],
+        [1,4,2,2,3,3,1,0],[2,3,3,2,3,4,2,0],[2,3,3,2,3,4,2,1]
+      ];
+      for(var d=0; d<7; d++){
+        var lbl=document.createElement('span'); lbl.className='hd'; lbl.textContent=days[d]; heat.appendChild(lbl);
+        for(var b=0;b<8;b++){
+          var c=document.createElement('span'); c.className='hc';
+          var L=grid[d][b];
+          c.style.opacity=(0.10+L*0.22).toFixed(2);
+          if(L>=4) c.style.background='#F59E0B';
+          (function(day,blk,level,cell){
+            cell.style.cursor='pointer'; cell.style.touchAction='pan-y';
+            function on(e){ cell.style.outline='1.5px solid rgba(255,255,255,0.55)';
+              showTip('<div class="xh">'+days[day]+' · '+blocks[blk]+'</div>'+row(level>=4?'#F59E0B':'#38BDF8','Activity',lvl[level]),e.clientX,e.clientY); }
+            function off(){ cell.style.outline=''; hideTip(); }
+            cell.addEventListener('pointerenter',on);
+            cell.addEventListener('pointermove',on);
+            cell.addEventListener('pointerdown',on);
+            cell.addEventListener('pointerleave',off);
+            cell.addEventListener('pointercancel',off);
+            cell.addEventListener('pointerup',function(e){ if(e.pointerType!=='mouse')off(); });
+          })(d,b,L,c);
+          heat.appendChild(c);
+        }
+      }
+    }
+
+    /* ===== entrance animation for bars (skipped under reduced-motion) ===== */
+    if(!reduce){
+      document.querySelectorAll('.mbar i, .pace .pbar i').forEach(function(b){
+        var w=b.style.width; b.style.width='0';
+        setTimeout(function(){ b.style.transition='width .9s cubic-bezier(.2,.8,.2,1)'; b.style.width=w; },180);
+      });
+      document.querySelectorAll('.ctbar i').forEach(function(b){
+        var w=b.style.width; b.style.width='0';
+        setTimeout(function(){ b.style.width=w; },180); // CSS already supplies the width transition
+      });
+    }
+  })();
+</script>
+</body>
+</html>
