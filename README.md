@@ -2,7 +2,7 @@
 
 **Live demo:** https://lexy-boa.github.io/teddy-buddies-daily-report/
 
-A board-level daily social-media analytics report, designed as a working prototype under **AIBC** for a preschool brand. The idea: every morning at 7:00 AM, leadership gets one page that answers *"what happened yesterday, and what does it mean for spend?"* — no dashboards to log into, no spreadsheet archaeology.
+A board-level daily social-media analytics report, designed as a working prototype under **AIBC Foundry** for a preschool brand. The idea: every morning at 7:00 AM, leadership gets one page that answers *"what happened yesterday, and what does it mean for spend?"* — no dashboards to log into, no spreadsheet archaeology.
 
 > ⚠️ **Prototype with illustrative data.** All figures shown (spend, enquiries, admissions, review counts) are representative sample data for demonstration — not actual business metrics.
 
@@ -19,4 +19,4 @@ A board-level daily social-media analytics report, designed as a working prototy
 - **Verdict-first, numbers-second** — the page leads with what leadership should *do*, not raw charts
 - **Two altitude levels** — a 60-second board view and a detailed operator view in one document
 
-Built by [Jachin Victor](https://www.linkedin.com/in/jachin-victor-3553b1232/) · AIBC
+Built by [Jachin Victor](https://www.linkedin.com/in/jachin-victor-3553b1232/) · AIBC Foundry
